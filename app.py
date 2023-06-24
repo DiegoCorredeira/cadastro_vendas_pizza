@@ -4,6 +4,7 @@ import datetime
 from tabulate import tabulate
 import colorama
 from colorama import Fore, Style
+from openpyxl import Workbook  
 
 # API Pushbullet para enviar notificaçãoo
 pb = Pushbullet('o.ZMG4L5olcoV4dVFRppVWNKBsRqGuP9s9')
@@ -21,7 +22,6 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS clientes
                 pago INTEGER)""")
 
 # Função para enviar notificação
-
 
 def push_notificacao(titulo, msg):
     pb.push_note(titulo, msg)
@@ -150,6 +150,42 @@ def ordernar_clientes():
         print("Opção inválida!")
     print()
 
+def relatorio_financeiro():
+    # count, sum, avg
+    cursor.execute("""SELECT COUNT(*) FROM clientes""")
+    total_clientes = cursor.fetchone()[0]
+
+    cursor.execute("""SELECT COUNT(*) FROM clientes WHERE pago = 1""")
+    total_pago = cursor.fetchone()[0]
+
+    cursor.execute("""SELECT COUNT(*) FROM clientes WHERE pago = 0""")
+    total_nao_pago = cursor.fetchone()[0]
+
+    cursor.execute("""SELECT SUM(valor) FROM clientes WHERE pago = 1""")
+    total_valor_pago = cursor.fetchone()[0]
+    
+    cursor.execute("""SELECT AVG(valor) FROM clientes WHERE pago = 1""")
+    media_pagos = cursor.fetchone()[0]
+
+
+    wb = Workbook()
+    sheet = wb.active
+
+    sheet['A1'] = 'Relatório Financeiro'
+    sheet['A3'] = 'Total de Clientes:'
+    sheet['B3'] =  total_clientes
+    sheet['A5'] = 'Total de pagamento relizado'
+    sheet['B5'] = total_pago
+    sheet['A7'] = 'Total de pagamento não relizado'
+    sheet['B7'] = total_nao_pago
+    sheet['A9'] = 'Total do valor dos pagamentos realizados'
+    sheet['B9'] = total_valor_pago
+    sheet['A11'] = 'Média dos valores pagos'
+    sheet['B11'] = media_pagos
+
+    wb.save('relatorio_financeiro.xlsx')
+    print('O relatório foi gerado com sucesso!')
+
 
 # Criação de menu
 def menu():
@@ -159,6 +195,7 @@ def menu():
     print('4 - Excluir Cliente')
     print('5 - Pesquisar Clientes')
     print('6 - Ordenar Clientes')
+    print('7 - Gerar Relatório ')
     print(Style.RESET_ALL)
 
 # Função principal
@@ -181,7 +218,7 @@ def main():
         elif op == 6:
             ordernar_clientes()
         elif op == 7:
-            ordernar_clientes()
+            relatorio_financeiro()
         else:
             print('Opção inválida!')
             continue
