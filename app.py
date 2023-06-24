@@ -72,13 +72,21 @@ def exibir_cliente():
 
     print(tabulate(table_data, headers, tablefmt="psql"))
     print()
+# Função para excluir cliente
+def excluir_cliente():
+    cliente_id = int(input('Digite o ID do cliente:'))
+    cursor.execute("""DELETE FROM clientes WHERE id = ?""", (cliente_id,))
+    conn.commit()
+    print('O cliente foi excluído com sucesso!')
+
+
 
 # Criação de menu
 def menu():
     print(Fore.GREEN + '1 - Cadastrar Cliente')
     print('2 - Alterar status de pagamento')
     print('3 - Exibir Clientes')
-    print('4 - Sair')
+    print('4 - Excluir Cliente')
     print(Style.RESET_ALL)
 
 # Função principal
@@ -95,7 +103,7 @@ def main():
         elif op == 3:
             exibir_cliente()
         elif op == 4:
-            break
+            excluir_cliente()
         else:
             print('Opção inválida!')
             continue
