@@ -21,10 +21,14 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS clientes
                 pago INTEGER)""")
 
 # Função para enviar notificação
+
+
 def push_notificacao(titulo, msg):
     pb.push_note(titulo, msg)
 
 # Função para verificar se o pagamento vence hoje e se vencer, envia notificação para o Pushbullet
+
+
 def verificar_data_pagamento():
     hoje = datetime.datetime.today().strftime("%d/%m/%Y")
     cursor.execute(
@@ -38,6 +42,8 @@ def verificar_data_pagamento():
                 push_notificacao('Vencimento de pagamento', msg)
 
 # Cadastrar cliente na base de dados
+
+
 def cadastrar_cliente():
     nome = input('Digite o nome do cliente: ')
     endereco = input('Digite o endereço do cliente: ')
@@ -53,14 +59,19 @@ def cadastrar_cliente():
     print('O cliente foi cadastrado com sucesso!')
 
 # Editar status de pagamento
+
+
 def editar_pagamento():
     cliente_id = int(input('Digite o ID do cliente: '))
     pago = int(input('Informe o novo status de pagamento (0 - Não, 1 - Sim):  '))
 
-    cursor.execute("""UPDATE clientes SET pago = ? WHERE id = ?""", (pago, cliente_id))
+    cursor.execute(
+        """UPDATE clientes SET pago = ? WHERE id = ?""", (pago, cliente_id))
     conn.commit()
 
 # Exibe tabela de clientes coom o tabulate
+
+
 def exibir_cliente():
     cursor.execute("""SELECT * FROM clientes""")
     rows = cursor.fetchall()
@@ -73,20 +84,48 @@ def exibir_cliente():
     print(tabulate(table_data, headers, tablefmt="psql"))
     print()
 # Função para excluir cliente
+
+
 def excluir_cliente():
     cliente_id = int(input('Digite o ID do cliente:'))
     cursor.execute("""DELETE FROM clientes WHERE id = ?""", (cliente_id,))
     conn.commit()
     print('O cliente foi excluído com sucesso!')
 
+# Função para pesquisar clientes
 
 
+def busca_cliente():
+    nome = input('Informe o nome do cliente que deseja pesquisar: ')
+
+    cursor.execute(
+        """SELECT * FROM clientes WHERE nome LIKE ? """, (f'%{nome}%',))
+    rows = cursor.fetchall()
+
+    if len(rows) > 0:
+        headers = ['ID', 'Nome', 'Endereço',
+                   'Quantidade adquirida', 'Valor', 'Data de pagamento', "Pago"]
+        table_data = []
+        for row in rows:
+            if row[6]:
+                table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                   row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.GREEN}Sim{Style.RESET_ALL}"])
+            else:
+                table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                   row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.RED}Não{Style.RESET_ALL}"])
+        print(tabulate(table_data, headers, tablefmt="psql"))
+    else:
+        print("Nenhum cliente encontrado no banco de dados")
+    print()
+
+    
 # Criação de menu
 def menu():
     print(Fore.GREEN + '1 - Cadastrar Cliente')
     print('2 - Alterar status de pagamento')
     print('3 - Exibir Clientes')
     print('4 - Excluir Cliente')
+    print('5 - Pesquisar Clientes')
     print(Style.RESET_ALL)
 
 # Função principal
@@ -104,11 +143,14 @@ def main():
             exibir_cliente()
         elif op == 4:
             excluir_cliente()
+        elif op == 5:
+            busca_cliente()
         else:
             print('Opção inválida!')
             continue
         verificar_data_pagamento()
     conn.close()
+
 
 # Execução do programa
 if __name__ == '__main__':
