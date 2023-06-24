@@ -78,8 +78,14 @@ def exibir_cliente():
 
     headers = ['ID', 'Nome', 'Endereço',
                'Quantidade adquirida', 'Valor', 'Data de pagamento', "Pago"]
-    table_data = [[row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
-                   row[2], row[3], f"R$ {row[4]:.2f}", row[5], "Sim" if row[6] else "Não"] for row in rows]
+    table_data = []
+    for row in rows:
+        if row[6]:
+            table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.GREEN}Sim{Style.RESET_ALL}"])
+        else:
+            table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.RED}Não{Style.RESET_ALL}"])
 
     print(tabulate(table_data, headers, tablefmt="psql"))
     print()
@@ -93,8 +99,6 @@ def excluir_cliente():
     print('O cliente foi excluído com sucesso!')
 
 # Função para pesquisar clientes
-
-
 def busca_cliente():
     nome = input('Informe o nome do cliente que deseja pesquisar: ')
 
@@ -118,7 +122,35 @@ def busca_cliente():
         print("Nenhum cliente encontrado no banco de dados")
     print()
 
-    
+def ordernar_clientes():
+    # Nome, data de pagamento, valor 
+    opcoes_de_ordem = ['Nome', 'Data de pagamento', 'Valor']
+    print("Escolha uma opção para ordenar os clientes")
+    print("1 - Nome ")
+    print("2 - Data de pagamento ")
+    print("3 - Valor ")
+    ordem = int(input("Informe a opção desejada: "))
+
+    if ordem >= 1 and ordem <= 3:
+        campo = opcoes_de_ordem[ordem - 1]
+        cursor.execute(f"""SELECT * FROM clientes ORDER BY {campo}""")
+        rows = cursor.fetchall()
+        headers = ['ID', 'Nome', 'Endereço',
+                   'Quantidade adquirida', 'Valor', 'Data de pagamento', "Pago"]
+        table_data = []
+        for row in rows:
+            if row[6]:
+                table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                   row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.GREEN}Sim{Style.RESET_ALL}"])
+            else:
+                table_data.append([row[0], f"{Fore.GREEN}{row[1]}{Style.RESET_ALL}",
+                                   row[2], row[3], f"R$ {row[4]:.2f}", row[5], f"{Fore.RED}Não{Style.RESET_ALL}"])
+        print(tabulate(table_data, headers, tablefmt="psql"))
+    else:
+        print("Opção inválida!")
+    print()
+
+
 # Criação de menu
 def menu():
     print(Fore.GREEN + '1 - Cadastrar Cliente')
@@ -126,6 +158,7 @@ def menu():
     print('3 - Exibir Clientes')
     print('4 - Excluir Cliente')
     print('5 - Pesquisar Clientes')
+    print('6 - Ordenar Clientes')
     print(Style.RESET_ALL)
 
 # Função principal
@@ -145,6 +178,10 @@ def main():
             excluir_cliente()
         elif op == 5:
             busca_cliente()
+        elif op == 6:
+            ordernar_clientes()
+        elif op == 7:
+            ordernar_clientes()
         else:
             print('Opção inválida!')
             continue
